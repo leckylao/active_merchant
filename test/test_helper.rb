@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 $:.unshift File.expand_path('../../lib', __FILE__)
+require "minitest/autorun"
 
 begin
   require 'rubygems'
@@ -8,8 +9,6 @@ begin
 rescue LoadError => e
   puts "Error loading bundler (#{e.message}): \"gem install bundler\" for bundler support."
 end
-
-require 'test/unit'
 
 require 'mocha/version'
 if(Mocha::VERSION.split(".")[1].to_i < 12)
@@ -20,7 +19,7 @@ end
 require 'yaml'
 require 'json'
 require 'active_merchant'
-require 'comm_stub'
+# require 'comm_stub'
 
 require 'active_support/core_ext/integer/time'
 require 'active_support/core_ext/numeric/time'
@@ -146,88 +145,89 @@ module ActiveMerchant
     LOCAL_CREDENTIALS = File.join(HOME_DIR.to_s, '.active_merchant/fixtures.yml') unless defined?(LOCAL_CREDENTIALS)
     DEFAULT_CREDENTIALS = File.join(File.dirname(__FILE__), 'fixtures.yml') unless defined?(DEFAULT_CREDENTIALS)
 
-    private
-    def credit_card(number = '4242424242424242', options = {})
-      defaults = {
-        :number => number,
-        :month => 9,
-        :year => Time.now.year + 1,
-        :first_name => 'Longbob',
-        :last_name => 'Longsen',
-        :verification_value => '123',
-        :brand => 'visa'
-      }.update(options)
+    class << self
+      def credit_card(number = '4242424242424242', options = {})
+        defaults = {
+          :number => number,
+          :month => 9,
+          :year => Time.now.year + 1,
+          :first_name => 'Longbob',
+          :last_name => 'Longsen',
+          :verification_value => '123',
+          :brand => 'visa'
+        }.update(options)
 
-      Billing::CreditCard.new(defaults)
-    end
-
-    def check(options = {})
-      defaults = {
-        :name => 'Jim Smith',
-        :bank_name => 'Bank of Elbonia',
-        :routing_number => '244183602',
-        :account_number => '15378535',
-        :account_holder_type => 'personal',
-        :account_type => 'checking',
-        :number => '1'
-      }.update(options)
-
-      Billing::Check.new(defaults)
-    end
-
-    def address(options = {})
-      {
-        :name     => 'Jim Smith',
-        :address1 => '1234 My Street',
-        :address2 => 'Apt 1',
-        :company  => 'Widgets Inc',
-        :city     => 'Ottawa',
-        :state    => 'ON',
-        :zip      => 'K1C2N6',
-        :country  => 'CA',
-        :phone    => '(555)555-5555',
-        :fax      => '(555)555-6666'
-      }.update(options)
-    end
-
-    def generate_unique_id
-      SecureRandom.hex(16)
-    end
-
-    def all_fixtures
-      @@fixtures ||= load_fixtures
-    end
-
-    def fixtures(key)
-      data = all_fixtures[key] || raise(StandardError, "No fixture data was found for '#{key}'")
-
-      data.dup
-    end
-
-    def load_fixtures
-      [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS].inject({}) do |credentials, file_name|
-        if File.exist?(file_name)
-          yaml_data = YAML.load(File.read(file_name))
-          credentials.merge!(symbolize_keys(yaml_data))
-        end
-        credentials
+        Billing::CreditCard.new(defaults)
       end
-    end
 
-    def symbolize_keys(hash)
-      return unless hash.is_a?(Hash)
+      def check(options = {})
+        defaults = {
+          :name => 'Jim Smith',
+          :bank_name => 'Bank of Elbonia',
+          :routing_number => '244183602',
+          :account_number => '15378535',
+          :account_holder_type => 'personal',
+          :account_type => 'checking',
+          :number => '1'
+        }.update(options)
 
-      hash.symbolize_keys!
-      hash.each{|k,v| symbolize_keys(v)}
+        Billing::Check.new(defaults)
+      end
+
+      def address(options = {})
+        {
+          :name     => 'Jim Smith',
+          :address1 => '1234 My Street',
+          :address2 => 'Apt 1',
+          :company  => 'Widgets Inc',
+          :city     => 'Ottawa',
+          :state    => 'ON',
+          :zip      => 'K1C2N6',
+          :country  => 'CA',
+          :phone    => '(555)555-5555',
+          :fax      => '(555)555-6666'
+        }.update(options)
+      end
+
+      def generate_unique_id
+        SecureRandom.hex(16)
+      end
+
+      def all_fixtures
+        @@fixtures ||= load_fixtures
+      end
+
+      def fixtures(key)
+        data = all_fixtures[key] || raise(StandardError, "No fixture data was found for '#{key}'")
+
+        data.dup
+      end
+
+      def load_fixtures
+        [DEFAULT_CREDENTIALS, LOCAL_CREDENTIALS].inject({}) do |credentials, file_name|
+          if File.exist?(file_name)
+            yaml_data = YAML.load(File.read(file_name))
+            credentials.merge!(symbolize_keys(yaml_data))
+          end
+          credentials
+        end
+      end
+
+      def symbolize_keys(hash)
+        return unless hash.is_a?(Hash)
+
+        hash.symbolize_keys!
+        hash.each{|k,v| symbolize_keys(v)}
+      end
     end
   end
 end
 
-Test::Unit::TestCase.class_eval do
-  include ActiveMerchant::Billing
-  include ActiveMerchant::Assertions
-  include ActiveMerchant::Fixtures
-end
+# Test::Unit::TestCase.class_eval do
+#   include ActiveMerchant::Billing
+#   include ActiveMerchant::Assertions
+#   include ActiveMerchant::Fixtures
+# end
 
 module ActionViewHelperTestHelper
   def self.included(base)

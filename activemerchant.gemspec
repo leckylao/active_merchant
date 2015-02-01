@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency('active_utils', '~> 2.2.0')
   s.add_dependency('nokogiri', "~> 1.4")
   s.add_dependency("offsite_payments", "~> 2.0.0")
+  s.add_dependency("simplify")
 
   s.add_development_dependency('rake')
   s.add_development_dependency('mocha', '~> 0.13.0')
