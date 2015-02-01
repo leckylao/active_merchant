@@ -7,7 +7,7 @@ module ActiveMerchant #:nodoc:
 
       # self.supported_countries = ['US']
       # self.default_currency = 'USD'
-      # self.supported_cardtypes = [:visa, :master, :american_express, :discover]
+      self.supported_cardtypes = [:visa, :master, :american_express, :discover, :diners, :jcb]
 
       self.homepage_url = 'https://www.simplify.com'
       self.display_name = 'Simplify Commerce'
